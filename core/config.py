@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     FRONTEND_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
+    # Azure AI - Speech-to-Text
+    AZURE_SPEECH_ENDPOINT: str = ""
+    AZURE_SPEECH_KEY: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     @property
