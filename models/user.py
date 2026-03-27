@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -25,12 +25,12 @@ class User(Base):
     # Profile
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     user_type: Mapped[str] = mapped_column(String(20), nullable=False)  # 'employee' | 'company'
-    department: Mapped[str | None] = mapped_column(String(100))
-    role: Mapped[str | None] = mapped_column(String(100))
-    company_name: Mapped[str | None] = mapped_column(String(255))
-    avatar_url: Mapped[str | None] = mapped_column(String(500))
-    bio: Mapped[str | None] = mapped_column(Text)
-    phone: Mapped[str | None] = mapped_column(String(30))
+    department: Mapped[Optional[str]] = mapped_column(String(100))
+    role: Mapped[Optional[str]] = mapped_column(String(100))
+    company_name: Mapped[Optional[str]] = mapped_column(String(255))
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
+    bio: Mapped[Optional[str]] = mapped_column(Text)
+    phone: Mapped[Optional[str]] = mapped_column(String(30))
 
     # Accessibility settings (stored as simple flags)
     accessibility_libras: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -51,24 +51,24 @@ class User(Base):
     )
 
     # Relationships
-    feedbacks_given: Mapped[list["Feedback"]] = relationship(
+    feedbacks_given: Mapped[List["Feedback"]] = relationship(
         "Feedback", foreign_keys="Feedback.author_id", back_populates="author"
     )
-    feedbacks_received: Mapped[list["Feedback"]] = relationship(
+    feedbacks_received: Mapped[List["Feedback"]] = relationship(
         "Feedback", foreign_keys="Feedback.recipient_id", back_populates="recipient"
     )
-    video_calls_created: Mapped[list["VideoCall"]] = relationship(
+    video_calls_created: Mapped[List["VideoCall"]] = relationship(
         "VideoCall", foreign_keys="VideoCall.created_by_id", back_populates="created_by"
     )
-    job_applications: Mapped[list["JobApplication"]] = relationship(
+    job_applications: Mapped[List["JobApplication"]] = relationship(
         "JobApplication", back_populates="applicant"
     )
-    training_enrollments: Mapped[list["TrainingEnrollment"]] = relationship(
+    training_enrollments: Mapped[List["TrainingEnrollment"]] = relationship(
         "TrainingEnrollment", back_populates="user"
     )
-    assessment_submissions: Mapped[list["AssessmentSubmission"]] = relationship(
+    assessment_submissions: Mapped[List["AssessmentSubmission"]] = relationship(
         "AssessmentSubmission", back_populates="user"
     )
-    career_goals: Mapped[list["CareerGoal"]] = relationship(
+    career_goals: Mapped[List["CareerGoal"]] = relationship(
         "CareerGoal", back_populates="user"
     )

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -9,7 +10,7 @@ class TrainingOut(BaseModel):
     description: str
     category: str
     duration_hours: int
-    thumbnail_url: str | None
+    thumbnail_url: Optional[str]
     is_active: bool
     created_at: datetime
 
@@ -23,7 +24,7 @@ class TrainingEnrollmentOut(BaseModel):
     progress_pct: int
     is_completed: bool
     enrolled_at: datetime
-    completed_at: datetime | None
+    completed_at: Optional[datetime]
 
     model_config = {"from_attributes": True}
 

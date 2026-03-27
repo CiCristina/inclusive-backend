@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -20,14 +20,14 @@ class Assessment(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     # 'performance' | 'skills' | 'culture' | 'leadership'
     category: Mapped[str] = mapped_column(String(50), nullable=False)
-    due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    due_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
     created_by: Mapped["User"] = relationship("User", foreign_keys=[created_by_id])
-    submissions: Mapped[list["AssessmentSubmission"]] = relationship(
+    submissions: Mapped[List["AssessmentSubmission"]] = relationship(
         "AssessmentSubmission", back_populates="assessment"
     )
 
@@ -40,7 +40,7 @@ class AssessmentSubmission(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
     answers: Mapped[str] = mapped_column(Text, nullable=False)  # JSON string
-    score: Mapped[int | None] = mapped_column(Integer)  # 0-100
+    score: Mapped[Optional[int]] = mapped_column(Integer)  # 0-100
     # 'pending' | 'submitted' | 'reviewed'
     status: Mapped[str] = mapped_column(String(20), default="submitted")
 

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, EmailStr
 
 
@@ -11,9 +13,9 @@ class RegisterRequest(BaseModel):
     password: str
     name: str
     user_type: str  # 'employee' | 'company'
-    department: str | None = None
-    role: str | None = None
-    company_name: str | None = None
+    department: Optional[str] = None
+    role: Optional[str] = None
+    company_name: Optional[str] = None
 
 
 class TokenResponse(BaseModel):

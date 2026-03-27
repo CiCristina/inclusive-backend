@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -8,7 +9,7 @@ class FeedbackCreate(BaseModel):
     feedback_type: str  # 'positive' | 'constructive' | 'development' | 'recognition'
     input_mode: str = "text"  # 'text' | 'voice' | 'video'
     content: str
-    media_url: str | None = None
+    media_url: Optional[str] = None
 
 
 class FeedbackUpdate(BaseModel):
@@ -18,9 +19,9 @@ class FeedbackUpdate(BaseModel):
 class AuthorOut(BaseModel):
     id: int
     name: str
-    role: str | None
-    department: str | None
-    avatar_url: str | None
+    role: Optional[str]
+    department: Optional[str]
+    avatar_url: Optional[str]
 
     model_config = {"from_attributes": True}
 
@@ -32,7 +33,7 @@ class FeedbackOut(BaseModel):
     feedback_type: str
     input_mode: str
     content: str
-    media_url: str | None
+    media_url: Optional[str]
     status: str
     created_at: datetime
 

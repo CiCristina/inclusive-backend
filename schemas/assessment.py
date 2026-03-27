@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -8,7 +9,7 @@ class AssessmentOut(BaseModel):
     title: str
     description: str
     category: str
-    due_date: datetime | None
+    due_date: Optional[datetime]
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -23,7 +24,7 @@ class AssessmentSubmissionOut(BaseModel):
     assessment: AssessmentOut
     user_id: int
     answers: str  # Stored as JSON string in DB
-    score: int | None
+    score: Optional[int]
     status: str
     submitted_at: datetime
 

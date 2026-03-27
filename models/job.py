@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -25,9 +25,9 @@ class Job(Base):
     # 'remote' | 'hybrid' | 'on-site'
     work_model: Mapped[str] = mapped_column(String(20), default="hybrid")
 
-    salary_range: Mapped[str | None] = mapped_column(String(100))
+    salary_range: Mapped[Optional[str]] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    requirements: Mapped[str | None] = mapped_column(Text)
+    requirements: Mapped[Optional[str]] = mapped_column(Text)
 
     is_accessible: Mapped[bool] = mapped_column(Boolean, default=False)
     is_internal: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -43,7 +43,7 @@ class Job(Base):
     )
 
     posted_by: Mapped["User"] = relationship("User", foreign_keys=[posted_by_id])
-    applications: Mapped[list["JobApplication"]] = relationship(
+    applications: Mapped[List["JobApplication"]] = relationship(
         "JobApplication", back_populates="job"
     )
 
@@ -55,7 +55,7 @@ class JobApplication(Base):
     job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), nullable=False)
     applicant_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
-    cover_letter: Mapped[str | None] = mapped_column(Text)
+    cover_letter: Mapped[Optional[str]] = mapped_column(Text)
     # 'applied' | 'reviewing' | 'accepted' | 'rejected'
     status: Mapped[str] = mapped_column(String(20), default="applied")
 

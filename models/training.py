@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -20,7 +20,7 @@ class Training(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     category: Mapped[str] = mapped_column(String(100), nullable=False)
     duration_hours: Mapped[int] = mapped_column(Integer, default=1)
-    thumbnail_url: Mapped[str | None] = mapped_column(String(500))
+    thumbnail_url: Mapped[Optional[str]] = mapped_column(String(500))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -28,7 +28,7 @@ class Training(Base):
     )
 
     created_by: Mapped["User"] = relationship("User", foreign_keys=[created_by_id])
-    enrollments: Mapped[list["TrainingEnrollment"]] = relationship(
+    enrollments: Mapped[List["TrainingEnrollment"]] = relationship(
         "TrainingEnrollment", back_populates="training"
     )
 
@@ -46,7 +46,7 @@ class TrainingEnrollment(Base):
     enrolled_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     training: Mapped["Training"] = relationship("Training", back_populates="enrollments")
     user: Mapped["User"] = relationship("User", back_populates="training_enrollments")

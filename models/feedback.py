@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -24,7 +24,7 @@ class Feedback(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
 
     # Optional audio/video URL when submitted via voice/video
-    media_url: Mapped[str | None] = mapped_column(String(500))
+    media_url: Mapped[Optional[str]] = mapped_column(String(500))
 
     # 'pending' | 'read' | 'acknowledged'
     status: Mapped[str] = mapped_column(String(20), default="pending")

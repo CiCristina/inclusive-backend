@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -17,8 +17,8 @@ class CareerGoal(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text)
-    target_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    target_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     is_achieved: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -31,7 +31,7 @@ class CareerGoal(Base):
     )
 
     user: Mapped["User"] = relationship("User", back_populates="career_goals")
-    milestones: Mapped[list["CareerMilestone"]] = relationship(
+    milestones: Mapped[List["CareerMilestone"]] = relationship(
         "CareerMilestone", back_populates="goal", cascade="all, delete-orphan"
     )
 
@@ -43,10 +43,10 @@ class CareerMilestone(Base):
     goal_id: Mapped[int] = mapped_column(ForeignKey("career_goals.id"), nullable=False)
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text)
+    description: Mapped[Optional[str]] = mapped_column(Text)
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -9,25 +10,25 @@ class JobCreate(BaseModel):
     location: str
     job_type: str = "full-time"   # 'full-time' | 'part-time' | 'contract' | 'internship'
     work_model: str = "hybrid"    # 'remote' | 'hybrid' | 'on-site'
-    salary_range: str | None = None
+    salary_range: Optional[str] = None
     description: str
-    requirements: str | None = None
+    requirements: Optional[str] = None
     is_accessible: bool = False
     is_internal: bool = True
 
 
 class JobUpdate(BaseModel):
-    title: str | None = None
-    department: str | None = None
-    location: str | None = None
-    job_type: str | None = None
-    work_model: str | None = None
-    salary_range: str | None = None
-    description: str | None = None
-    requirements: str | None = None
-    is_accessible: bool | None = None
-    is_internal: bool | None = None
-    is_active: bool | None = None
+    title: Optional[str] = None
+    department: Optional[str] = None
+    location: Optional[str] = None
+    job_type: Optional[str] = None
+    work_model: Optional[str] = None
+    salary_range: Optional[str] = None
+    description: Optional[str] = None
+    requirements: Optional[str] = None
+    is_accessible: Optional[bool] = None
+    is_internal: Optional[bool] = None
+    is_active: Optional[bool] = None
 
 
 class JobOut(BaseModel):
@@ -37,9 +38,9 @@ class JobOut(BaseModel):
     location: str
     job_type: str
     work_model: str
-    salary_range: str | None
+    salary_range: Optional[str]
     description: str
-    requirements: str | None
+    requirements: Optional[str]
     is_accessible: bool
     is_internal: bool
     is_active: bool
@@ -49,14 +50,14 @@ class JobOut(BaseModel):
 
 
 class JobApplicationCreate(BaseModel):
-    cover_letter: str | None = None
+    cover_letter: Optional[str] = None
 
 
 class JobApplicationOut(BaseModel):
     id: int
     job: JobOut
     applicant_id: int
-    cover_letter: str | None
+    cover_letter: Optional[str]
     status: str
     applied_at: datetime
 

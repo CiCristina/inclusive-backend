@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -22,7 +24,7 @@ def get_current_user(
     if payload is None:
         raise credentials_exception
 
-    user_id: int | None = payload.get("sub")
+    user_id: Optional[int] = payload.get("sub")
     if user_id is None:
         raise credentials_exception
 

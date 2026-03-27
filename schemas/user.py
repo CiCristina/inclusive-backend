@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr
 
@@ -13,14 +14,14 @@ class AccessibilitySettings(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    name: str | None = None
-    department: str | None = None
-    role: str | None = None
-    company_name: str | None = None
-    avatar_url: str | None = None
-    bio: str | None = None
-    phone: str | None = None
-    accessibility: AccessibilitySettings | None = None
+    name: Optional[str] = None
+    department: Optional[str] = None
+    role: Optional[str] = None
+    company_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    phone: Optional[str] = None
+    accessibility: Optional[AccessibilitySettings] = None
 
 
 class UserOut(BaseModel):
@@ -28,12 +29,12 @@ class UserOut(BaseModel):
     email: EmailStr
     name: str
     user_type: str
-    department: str | None
-    role: str | None
-    company_name: str | None
-    avatar_url: str | None
-    bio: str | None
-    phone: str | None
+    department: Optional[str]
+    role: Optional[str]
+    company_name: Optional[str]
+    avatar_url: Optional[str]
+    bio: Optional[str]
+    phone: Optional[str]
     accessibility: AccessibilitySettings
     created_at: datetime
 
@@ -41,7 +42,6 @@ class UserOut(BaseModel):
 
     @classmethod
     def model_validate(cls, obj, **kwargs):
-        # Flatten accessibility fields from the ORM object into the nested schema
         if hasattr(obj, "accessibility_libras"):
             data = {
                 "id": obj.id,

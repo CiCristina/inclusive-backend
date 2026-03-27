@@ -1,25 +1,26 @@
 from datetime import datetime
+from typing import List, Optional
 
 from pydantic import BaseModel
 
 
 class CareerMilestoneCreate(BaseModel):
     title: str
-    description: str | None = None
+    description: Optional[str] = None
 
 
 class CareerMilestoneUpdate(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    is_completed: bool | None = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    is_completed: Optional[bool] = None
 
 
 class CareerMilestoneOut(BaseModel):
     id: int
     title: str
-    description: str | None
+    description: Optional[str]
     is_completed: bool
-    completed_at: datetime | None
+    completed_at: Optional[datetime]
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -27,25 +28,25 @@ class CareerMilestoneOut(BaseModel):
 
 class CareerGoalCreate(BaseModel):
     title: str
-    description: str | None = None
-    target_date: datetime | None = None
-    milestones: list[CareerMilestoneCreate] = []
+    description: Optional[str] = None
+    target_date: Optional[datetime] = None
+    milestones: List[CareerMilestoneCreate] = []
 
 
 class CareerGoalUpdate(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    target_date: datetime | None = None
-    is_achieved: bool | None = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    target_date: Optional[datetime] = None
+    is_achieved: Optional[bool] = None
 
 
 class CareerGoalOut(BaseModel):
     id: int
     title: str
-    description: str | None
-    target_date: datetime | None
+    description: Optional[str]
+    target_date: Optional[datetime]
     is_achieved: bool
-    milestones: list[CareerMilestoneOut]
+    milestones: List[CareerMilestoneOut]
     created_at: datetime
 
     model_config = {"from_attributes": True}
