@@ -51,4 +51,4 @@ class CareerMilestone(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
-    goal: Mapped["CareerMilestone"] = relationship("CareerGoal", back_populates="milestones")
+    goal: Mapped["CareerGoal"] = relationship("CareerGoal", back_populates="milestones")
