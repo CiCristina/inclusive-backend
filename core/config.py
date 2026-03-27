@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     FRONTEND_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
     # Azure AI - Speech-to-Text
-    AZURE_SPEECH_ENDPOINT: str = ""
     AZURE_SPEECH_KEY: str = ""
+    AZURE_SPEECH_REGION: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

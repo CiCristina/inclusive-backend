@@ -1,6 +1,8 @@
-import httpx
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+import asyncio
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from pydantic import BaseModel
+
+import azure.cognitiveservices.speech as speech_sdk
 
 from core.config import settings
 from core.deps import get_current_user
@@ -10,12 +12,15 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 
 SUPPORTED_AUDIO_TYPES = {
     "audio/wav",
+    "audio/x-wav",
     "audio/mpeg",
     "audio/mp4",
     "audio/webm",
     "audio/ogg",
-    "audio/x-wav",
 }
+
+# Languages supported by the frontend (i18n)
+SUPPORTED_LANGUAGES = {"pt-BR", "en-US", "es-ES"}
 
 
 class TranscribeResponse(BaseModel):
@@ -25,65 +30,74 @@ class TranscribeResponse(BaseModel):
 @router.post("/transcribe", response_model=TranscribeResponse)
 async def transcribe_audio(
     file: UploadFile = File(...),
+    language: str = Query(default="pt-BR", description="BCP-47 language code, e.g. pt-BR, en-US, es-ES"),
     current_user: User = Depends(get_current_user),
 ):
     if file.content_type not in SUPPORTED_AUDIO_TYPES:
         raise HTTPException(
             status_code=415,
-            detail=f"Unsupported audio format: {file.content_type}. "
+            detail=f"Unsupported audio format '{file.content_type}'. "
                    f"Supported: {', '.join(SUPPORTED_AUDIO_TYPES)}",
         )
 
-    audio_bytes = await file.read()
-    if len(audio_bytes) == 0:
-        raise HTTPException(status_code=400, detail="Audio file is empty")
+    if language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported language '{language}'. "
+                   f"Supported: {', '.join(SUPPORTED_LANGUAGES)}",
+        )
 
-    if not settings.AZURE_SPEECH_KEY or not settings.AZURE_SPEECH_ENDPOINT:
+    if not settings.AZURE_SPEECH_KEY or not settings.AZURE_SPEECH_REGION:
         raise HTTPException(
             status_code=503,
-            detail="Azure Speech-to-Text is not configured yet",
+            detail="Azure Speech-to-Text is not configured yet (missing KEY or REGION)",
         )
 
-    # TODO (Mingyu): Confirm the correct path to append to AZURE_SPEECH_ENDPOINT
-    # for the transcription call. Current guess based on Azure AI Foundry patterns:
-    #
-    #   Option A (Azure AI Speech):
-    #     path = "/speechtotext/transcriptions:transcribe?api-version=2024-11-15"
-    #
-    #   Option B (Whisper via Azure OpenAI):
-    #     path = "/openai/deployments/<deployment-name>/audio/transcriptions?api-version=2024-02-01"
-    #
-    # Also confirm:
-    #   - Should the audio be sent as multipart/form-data or base64 JSON?
-    #   - What is the exact field name for the transcribed text in the response JSON?
-    #   - Does the API accept a language parameter? (frontend uses pt-BR, en-US, es-ES)
+    audio_bytes = await file.read()
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="Audio file is empty")
 
-    azure_url = settings.AZURE_SPEECH_ENDPOINT + "/speechtotext/transcriptions:transcribe?api-version=2024-11-15"
+    # Run the blocking SDK call in a thread so it doesn't freeze the async server
+    text = await asyncio.to_thread(_transcribe_with_sdk, audio_bytes, language)
+    return TranscribeResponse(text=text)
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(
-            azure_url,
-            headers={"api-key": settings.AZURE_SPEECH_KEY},
-            files={"audio": (file.filename, audio_bytes, file.content_type)},
-        )
 
-    if response.status_code != 200:
-        raise HTTPException(
-            status_code=502,
-            detail=f"Azure Speech API error: {response.status_code} — {response.text}",
-        )
+def _transcribe_with_sdk(audio_bytes: bytes, language: str) -> str:
+    """
+    Synchronous transcription using the Azure Speech SDK.
+    Adapted from Mingyu's code — uses PushAudioInputStream so we don't
+    need to write the uploaded file to disk.
+    """
+    speech_config = speech_sdk.SpeechConfig(
+        subscription=settings.AZURE_SPEECH_KEY,
+        region=settings.AZURE_SPEECH_REGION,
+    )
+    speech_config.speech_recognition_language = language
 
-    data = response.json()
+    # Feed audio bytes directly into the recognizer (no temp file needed)
+    stream = speech_sdk.audio.PushAudioInputStream()
+    stream.write(audio_bytes)
+    stream.close()
 
-    # TODO (Mingyu): Confirm the field name for the transcribed text in the response.
-    # Common options: "text", "transcript", "combinedPhrases[0].text"
-    transcribed_text = (
-        data.get("text")
-        or data.get("transcript")
-        or data.get("combinedPhrases", [{}])[0].get("text", "")
+    audio_config = speech_sdk.audio.AudioConfig(stream=stream)
+    recognizer = speech_sdk.SpeechRecognizer(
+        speech_config=speech_config,
+        audio_config=audio_config,
     )
 
-    if not transcribed_text:
-        raise HTTPException(status_code=502, detail="Azure returned an empty transcription")
+    result = recognizer.recognize_once_async().get()
 
-    return TranscribeResponse(text=transcribed_text)
+    if result.reason == speech_sdk.ResultReason.RecognizedSpeech:
+        return result.text
+
+    if result.reason == speech_sdk.ResultReason.NoMatch:
+        raise HTTPException(status_code=422, detail="Speech could not be recognized in the audio")
+
+    if result.reason == speech_sdk.ResultReason.Canceled:
+        details = speech_sdk.CancellationDetails.from_result(result)
+        raise HTTPException(
+            status_code=502,
+            detail=f"Azure Speech canceled: {details.reason} — {details.error_details}",
+        )
+
+    raise HTTPException(status_code=502, detail="Unexpected response from Azure Speech")
